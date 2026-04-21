@@ -79,6 +79,9 @@ app-builds/
 # Tauri build output (keep source, ignore compiled artifacts)
 src-tauri/target/
 
+# Tauri generated schemas (can be regenerated)
+src-tauri/gen/
+
 # Logs
 *.log
 
