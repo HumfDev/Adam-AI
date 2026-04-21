@@ -85,11 +85,9 @@ class HX711:
         return raw - self.offset
 
 def main():
-    led = Pin(8, Pin.OUT)
-    led.on()
 
     # --- Sensors ---
-    hx = HX711(dout_pin=10, sck_pin=9, gain=128)
+    hx = HX711(dout_pin=8, sck_pin=7, gain=128)
     ads = ADS1115Sensor(i2c_id=1, sda=6, scl=7, i2c_addr=0x48)
 
     print("Taring HX711...")

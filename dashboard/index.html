@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Adam Biotech — Live Dashboard</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 48 48" width="36" height="36">
+        <circle cx="24" cy="24" r="22" fill="rgb(74,93,87)" />
+        <text x="24" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="rgb(204,163,72)" font-family="serif">A</text>
+      </svg>
+    </div>
+    <span class="logo-text">Adam<br/><small>Biotech</small></span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <button class="nav-item active" data-panel="live">
+      <span class="nav-icon">◉</span> Live Print
+    </button>
+    <button class="nav-item" data-panel="classifier">
+      <span class="nav-icon">⬡</span> Classifier
+    </button>
+    <button class="nav-item" data-panel="analytics">
+      <span class="nav-icon">▦</span> Analytics
+    </button>
+    <button class="nav-item" data-panel="sessions">
+      <span class="nav-icon">≡</span> Sessions
+    </button>
+    <button class="nav-item" data-panel="drift">
+      <span class="nav-icon">⌁</span> Drift
+    </button>
+  </nav>
+
+  <div class="sidebar-status">
+    <div class="status-dot active"></div>
+    <span>Session #0041 — Active</span>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1 id="panel-title">Live Print Monitor</h1>
+      <span class="topbar-sub">Layer 1 · LSTM Predictor — 30s window</span>
+    </div>
+    <div class="topbar-right">
+      <div class="chip chip-green">● PRINTING</div>
+      <div class="chip chip-dim">Session #0041</div>
+      <div class="chip chip-dim" id="clock">--:--:--</div>
+    </div>
+  </header>
+
+  <!-- PANELS -->
+
+  <!-- ═══ LIVE PRINT ═══ -->
+  <section class="panel active" id="panel-live">
+
+    <!-- Row 1: Sensor live readings -->
+    <div class="row-3">
+      <div class="card sensor-card">
+        <div class="card-label">Force (Load Cell)</div>
+        <div class="sensor-value" id="s-force">0.00</div>
+        <div class="sensor-unit">mN</div>
+        <canvas class="sparkline" id="spark-force"></canvas>
+      </div>
+      <div class="card sensor-card">
+        <div class="card-label">Temperature</div>
+        <div class="sensor-value" id="s-temp">37.2</div>
+        <div class="sensor-unit">°C</div>
+        <canvas class="sparkline" id="spark-temp"></canvas>
+      </div>
+      <div class="card sensor-card">
+        <div class="card-label">Color Signal (A0)</div>
+        <div class="sensor-value" id="s-color">0.00</div>
+        <div class="sensor-unit">V</div>
+        <canvas class="sparkline" id="spark-color"></canvas>
+      </div>
+    </div>
+
+    <!-- Row 2: LSTM failure predictor + 30s buffer chart -->
+    <div class="row-2-wide">
+      <div class="card lstm-card">
+        <div class="card-label">LSTM Failure Probability <span class="badge">Layer 1</span></div>
+        <div class="lstm-gauge-wrap">
+          <canvas id="gauge-canvas" width="260" height="140"></canvas>
+          <div class="lstm-score" id="lstm-score">0.00</div>
+          <div class="lstm-label" id="lstm-label">LOW RISK</div>
+        </div>
+        <div class="lstm-meta">
+          <span>Window: 30s</span>
+          <span>Refresh: 5s</span>
+          <span id="lstm-tick">Next update in <b>5</b>s</span>
+        </div>
+      </div>
+
+      <div class="card buffer-card">
+        <div class="card-label">30-Second Sensor Buffer</div>
+        <canvas id="buffer-chart" height="160"></canvas>
+        <div class="chart-legend">
+          <span class="leg-dot" style="background:rgb(204,163,72)"></span>Force
+          <span class="leg-dot" style="background:#5ba8a0"></span>Temp
+          <span class="leg-dot" style="background:#a07abd"></span>Color
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: Data flow pipeline status -->
+    <div class="row-1">
+      <div class="card pipeline-card">
+        <div class="card-label">Data Pipeline</div>
+        <div class="pipeline-steps">
+          <div class="pipe-step active">
+            <div class="pipe-icon">⬡</div>
+            <div class="pipe-name">Sensor HW</div>
+            <div class="pipe-status">LIVE</div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step active">
+            <div class="pipe-icon">⬡</div>
+            <div class="pipe-name">ingest.py</div>
+            <div class="pipe-status">RUNNING</div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step active">
+            <div class="pipe-icon">⬡</div>
+            <div class="pipe-name">Supabase</div>
+            <div class="pipe-status">CONNECTED</div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step active">
+            <div class="pipe-icon">⬡</div>
+            <div class="pipe-name">LSTM Buffer</div>
+            <div class="pipe-status">FILLING</div>
+          </div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step pending">
+            <div class="pipe-icon">⬡</div>
+            <div class="pipe-name">S3 Models</div>
+            <div class="pipe-status">PENDING</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CLASSIFIER ═══ -->
+  <section class="panel" id="panel-classifier">
+    <div class="row-2">
+      <div class="card">
+        <div class="card-label">RandomForest Failure Classifier <span class="badge">Layer 2</span></div>
+        <div class="cf-note">Runs on full session data at session close</div>
+        <div class="cf-bars" id="cf-bars">
+          <!-- injected by JS -->
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Last Session Result</div>
+        <div class="session-result">
+          <div class="result-badge pass">PASS</div>
+          <div class="result-meta">
+            <div>Session #0040</div>
+            <div>Duration: 4m 12s</div>
+            <div>Bioink: PLA-A3</div>
+            <div>Health Score: <b style="color:rgb(204,163,72)">84</b> / 100</div>
+          </div>
+        </div>
+        <div class="card-label" style="margin-top:1.2rem">Operator Label</div>
+        <div class="label-buttons">
+          <button class="label-btn pass-btn">✓ PASS</button>
+          <button class="label-btn fail-btn">✗ FAIL</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row-1">
+      <div class="card">
+        <div class="card-label">Failure Type Definitions</div>
+        <table class="def-table">
+          <thead><tr><th>Class</th><th>Description</th><th>Trigger Condition</th></tr></thead>
+          <tbody>
+            <tr><td>Nozzle Clog</td><td>Force spike with no extrusion</td><td>Force &gt; 2σ, Color flat</td></tr>
+            <tr><td>Under-extrusion</td><td>Low force, sparse color signal</td><td>Force &lt; baseline − 1.5σ</td></tr>
+            <tr><td>Temp Drift</td><td>Temperature outside ±1.5°C window</td><td>Temp deviation sustained &gt;10s</td></tr>
+            <tr><td>Layer Delamination</td><td>Sudden force drop mid-layer</td><td>Force Δ &gt; 40% in 1s</td></tr>
+            <tr><td>Bioink Degradation</td><td>Color shift over time</td><td>Color slope &gt; threshold</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ ANALYTICS ═══ -->
+  <section class="panel" id="panel-analytics">
+    <!-- Health score hero -->
+    <div class="row-3">
+      <div class="card health-card">
+        <div class="card-label">Print Health Score <span class="badge">Layer 3</span></div>
+        <div class="health-ring-wrap">
+          <canvas id="health-ring" width="140" height="140"></canvas>
+          <div class="health-number" id="health-num">84</div>
+        </div>
+        <div class="health-sub">Scale: 0 – 100 (IND-calibrated)</div>
+      </div>
+      <div class="card stat-card">
+        <div class="card-label">Pass / Fail Rate</div>
+        <div class="pf-big">
+          <span class="pf-pass" id="pf-pass">78%</span>
+          <span class="pf-sep">/</span>
+          <span class="pf-fail" id="pf-fail">22%</span>
+        </div>
+        <div class="pf-counts">
+          <span id="pf-pass-n">39 passed</span> · <span id="pf-fail-n">12 failed</span> · <span>51 total</span>
+        </div>
+        <canvas id="pf-history" height="80" style="margin-top:.8rem;width:100%"></canvas>
+      </div>
+      <div class="card stat-card">
+        <div class="card-label">Failure Pattern Miner <span class="badge">Layer 3</span></div>
+        <div class="pattern-list" id="pattern-list">
+          <!-- injected by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Trend chart -->
+    <div class="row-1">
+      <div class="card">
+        <div class="card-label">Health Score Trend — Last 20 Sessions</div>
+        <canvas id="trend-chart" height="130"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SESSIONS ═══ -->
+  <section class="panel" id="panel-sessions">
+    <div class="row-1">
+      <div class="card">
+        <div class="card-label">Session Log</div>
+        <table class="session-table" id="session-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Date</th><th>Bioink</th><th>Duration</th>
+              <th>Health</th><th>Label</th><th>Dominant Failure</th>
+            </tr>
+          </thead>
+          <tbody id="session-tbody">
+            <!-- injected by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ DRIFT ═══ -->
+  <section class="panel" id="panel-drift">
+    <div class="row-3">
+      <div class="card drift-stat-card">
+        <div class="card-label">Force Drift</div>
+        <div class="drift-indicator" id="drift-force">
+          <div class="drift-val">+0.3σ</div>
+          <div class="drift-status stable">STABLE</div>
+        </div>
+        <canvas id="drift-force-chart" height="80"></canvas>
+      </div>
+      <div class="card drift-stat-card">
+        <div class="card-label">Temperature Drift</div>
+        <div class="drift-indicator" id="drift-temp">
+          <div class="drift-val">−0.1σ</div>
+          <div class="drift-status stable">STABLE</div>
+        </div>
+        <canvas id="drift-temp-chart" height="80"></canvas>
+      </div>
+      <div class="card drift-stat-card">
+        <div class="card-label">Color Signal Drift</div>
+        <div class="drift-indicator" id="drift-color">
+          <div class="drift-val">+1.8σ</div>
+          <div class="drift-status warn">WATCH</div>
+        </div>
+        <canvas id="drift-color-chart" height="80"></canvas>
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div class="card">
+        <div class="card-label">Drift Detector — Population Shift <span class="badge">Layer 3</span></div>
+        <div class="drift-desc">
+          Uses scipy KS-test on 20-session rolling windows to detect distribution shift in sensor baselines.
+          A p-value &lt; 0.05 triggers a DRIFT ALERT.
+        </div>
+        <table class="def-table" style="margin-top:.8rem">
+          <thead><tr><th>Signal</th><th>KS Statistic</th><th>p-value</th><th>Status</th></tr></thead>
+          <tbody id="ks-tbody">
+            <tr><td>Force</td><td>0.14</td><td>0.31</td><td><span class="chip chip-green" style="font-size:.7rem">OK</span></td></tr>
+            <tr><td>Temperature</td><td>0.09</td><td>0.67</td><td><span class="chip chip-green" style="font-size:.7rem">OK</span></td></tr>
+            <tr><td>Color (A0)</td><td>0.28</td><td>0.04</td><td><span class="chip chip-amber" style="font-size:.7rem">WATCH</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-label">Retrain Pipeline</div>
+        <div class="retrain-status">
+          <div class="retrain-row">
+            <span>Last retrain</span><b>Session #0038</b>
+          </div>
+          <div class="retrain-row">
+            <span>New labeled samples</span><b id="new-samples">3</b>
+          </div>
+          <div class="retrain-row">
+            <span>Model version</span><b>lstm_v4 · rf_v7</b>
+          </div>
+          <div class="retrain-row">
+            <span>S3 upload status</span><b class="status-pending">PENDING</b>
+          </div>
+        </div>
+        <button class="retrain-btn" disabled>⟳ Trigger Retrain (min 10 new samples)</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script src="renderer.js"></script>
+</body>
+</html>

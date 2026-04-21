@@ -10,3 +10,20 @@
 __pycache__/
 *.pyc
 *.pyo
+.venv/
+venv/
+*.egg-info/
+.eggs/
+
+# Node / npm (dependencies are installed locally; never commit)
+node_modules/
+
+# Electron / desktop build output
+out/
+dist/
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

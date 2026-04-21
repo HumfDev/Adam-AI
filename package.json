@@ -1,0 +1,24 @@
+{
+  "name": "adam",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dashboard/main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HumfDev/Adam-AI.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/HumfDev/Adam-AI/issues"
+  },
+  "homepage": "https://github.com/HumfDev/Adam-AI#readme",
+  "devDependencies": {
+    "electron": "^41.2.1"
+  }
+}
