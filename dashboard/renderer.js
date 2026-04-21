@@ -80,11 +80,19 @@ function drawSparkline(canvas, data, color) {
 }
 
 // ── Sensor simulation state ────────────────────────────────────
-const BUFFER_LEN = 30; // 30 data points = 30 seconds at 1Hz
+const BUFFER_LEN = 30;
+
+function initBuf(fn) { return Array.from({length: BUFFER_LEN}, (_, i) => fn(i)); }
+
 const sensors = {
-  force: Array.from({length: BUFFER_LEN}, (_, i) => 80 + Math.sin(i * 0.4) * 12 + Math.random() * 5),
-  temp:  Array.from({length: BUFFER_LEN}, (_, i) => 37.2 + Math.sin(i * 0.2) * 0.4 + (Math.random() - 0.5) * 0.3),
-  color: Array.from({length: BUFFER_LEN}, (_, i) => 1.6 + Math.sin(i * 0.3) * 0.1 + Math.random() * 0.05),
+  therm0: initBuf(i => 37.2 + Math.sin(i * 0.25) * 0.4  + (Math.random() - 0.5) * 0.2),
+  therm1: initBuf(i => 36.8 + Math.sin(i * 0.20) * 0.35 + (Math.random() - 0.5) * 0.2),
+  force:  initBuf(i => 80   + Math.sin(i * 0.40) * 12   + Math.random() * 5),
+  acid0:  initBuf(i => 7.35 + Math.sin(i * 0.15) * 0.06 + (Math.random() - 0.5) * 0.02),
+  acid1:  initBuf(i => 7.40 + Math.sin(i * 0.18) * 0.05 + (Math.random() - 0.5) * 0.02),
+  conc:   initBuf(i => 88   + Math.sin(i * 0.30) * 3    + (Math.random() - 0.5) * 1.5),
+  hp0:    initBuf(i => 45   + Math.sin(i * 0.50) * 5    + (Math.random() - 0.5) * 2),
+  hp1:    initBuf(i => 52   + Math.sin(i * 0.45) * 6    + (Math.random() - 0.5) * 2),
 };
 
 function pushSensor(arr, val) {
@@ -104,7 +112,6 @@ function drawBufferChart() {
   const ctx = bufCanvas.getContext('2d');
   ctx.clearRect(0, 0, w, h);
 
-  // grid
   ctx.strokeStyle = 'rgba(255,255,255,0.05)';
   ctx.lineWidth = 1;
   for (let g = 0; g <= 4; g++) {
@@ -128,9 +135,12 @@ function drawBufferChart() {
     ctx.stroke();
   }
 
-  plotLine(sensors.force, C.gold);
-  plotLine(sensors.temp,  '#5ba8a0');
-  plotLine(sensors.color, C.purple);
+  plotLine(sensors.therm0, '#5ba8a0');
+  plotLine(sensors.therm1, '#7ec8c0');
+  plotLine(sensors.force,  C.gold);
+  plotLine(sensors.acid0,  '#e07ab0');
+  plotLine(sensors.acid1,  C.purple);
+  plotLine(sensors.conc,   '#6ab0e0');
 }
 
 // ── Gauge (half-circle) ───────────────────────────────────────
@@ -210,22 +220,60 @@ setInterval(() => {
 }, 1000);
 
 // ── Sensor tick (1Hz) ─────────────────────────────────────────
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
 function sensorTick() {
-  const fNew = last(sensors.force) + (Math.random() - 0.48) * 4;
-  const tNew = 37.2 + Math.sin(Date.now() / 8000) * 0.5 + (Math.random() - 0.5) * 0.15;
-  const cNew = 1.62 + Math.sin(Date.now() / 5000) * 0.08 + Math.random() * 0.02;
+  const t = Date.now();
 
-  pushSensor(sensors.force, fNew);
-  pushSensor(sensors.temp,  tNew);
-  pushSensor(sensors.color, cNew);
+  const t0 = clamp(last(sensors.therm0) + (Math.random() - 0.49) * 0.12, 35, 40);
+  const t1 = clamp(last(sensors.therm1) + (Math.random() - 0.49) * 0.12, 35, 40);
+  const f  = last(sensors.force) + (Math.random() - 0.48) * 4;
+  const a0 = clamp(last(sensors.acid0) + (Math.random() - 0.5) * 0.012, 6.8, 7.8);
+  const a1 = clamp(last(sensors.acid1) + (Math.random() - 0.5) * 0.012, 6.8, 7.8);
+  const co = clamp(last(sensors.conc)  + (Math.random() - 0.49) * 0.8, 70, 100);
+  const h0 = clamp(last(sensors.hp0)  + (Math.random() - 0.5) * 1.5,  0, 100);
+  const h1 = clamp(last(sensors.hp1)  + (Math.random() - 0.5) * 1.5,  0, 100);
 
-  document.getElementById('s-force').textContent = fNew.toFixed(2);
-  document.getElementById('s-temp').textContent  = tNew.toFixed(2);
-  document.getElementById('s-color').textContent = cNew.toFixed(3);
+  pushSensor(sensors.therm0, t0);
+  pushSensor(sensors.therm1, t1);
+  pushSensor(sensors.force,  f);
+  pushSensor(sensors.acid0,  a0);
+  pushSensor(sensors.acid1,  a1);
+  pushSensor(sensors.conc,   co);
+  pushSensor(sensors.hp0,    h0);
+  pushSensor(sensors.hp1,    h1);
 
-  drawSparkline(document.getElementById('spark-force'), sensors.force, C.gold);
-  drawSparkline(document.getElementById('spark-temp'),  sensors.temp,  '#5ba8a0');
-  drawSparkline(document.getElementById('spark-color'), sensors.color, C.purple);
+  // text values
+  document.getElementById('s-therm0').textContent = t0.toFixed(2);
+  document.getElementById('s-therm1').textContent = t1.toFixed(2);
+  document.getElementById('s-force').textContent  = f.toFixed(2);
+  document.getElementById('s-acid0').textContent  = a0.toFixed(3);
+  document.getElementById('s-acid1').textContent  = a1.toFixed(3);
+  document.getElementById('s-conc').textContent   = co.toFixed(1);
+
+  // heat pads
+  const hp0pct = Math.round(h0);
+  const hp1pct = Math.round(h1);
+  document.getElementById('hp0-fill').style.width  = hp0pct + '%';
+  document.getElementById('hp1-fill').style.width  = hp1pct + '%';
+  document.getElementById('hp0-pwm').textContent   = hp0pct + '% PWM';
+  document.getElementById('hp1-pwm').textContent   = hp1pct + '% PWM';
+  const hp0El = document.getElementById('hp0-state');
+  const hp1El = document.getElementById('hp1-state');
+  hp0El.textContent = hp0pct > 5 ? 'ON' : 'OFF';
+  hp0El.className   = 'heatpad-state' + (hp0pct > 5 ? '' : ' off');
+  hp1El.textContent = hp1pct > 5 ? 'ON' : 'OFF';
+  hp1El.className   = 'heatpad-state' + (hp1pct > 5 ? '' : ' off');
+
+  // sparklines
+  drawSparkline(document.getElementById('spark-therm0'), sensors.therm0, '#5ba8a0');
+  drawSparkline(document.getElementById('spark-therm1'), sensors.therm1, '#7ec8c0');
+  drawSparkline(document.getElementById('spark-force'),  sensors.force,  C.gold);
+  drawSparkline(document.getElementById('spark-acid0'),  sensors.acid0,  '#e07ab0');
+  drawSparkline(document.getElementById('spark-acid1'),  sensors.acid1,  C.purple);
+  drawSparkline(document.getElementById('spark-conc'),   sensors.conc,   '#6ab0e0');
+  drawSparkline(document.getElementById('spark-hp0'),    sensors.hp0,    C.amber);
+
   drawBufferChart();
 }
 setInterval(sensorTick, 1000);

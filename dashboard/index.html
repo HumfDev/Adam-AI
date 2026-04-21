@@ -63,29 +63,75 @@
   <!-- ═══ LIVE PRINT ═══ -->
   <section class="panel active" id="panel-live">
 
-    <!-- Row 1: Sensor live readings -->
+    <!-- Row 1: Thermistors + Acidity sensors -->
+    <div class="row-4">
+      <div class="card sensor-card">
+        <div class="card-label sensor-tag therm">THERM 0</div>
+        <div class="sensor-value" id="s-therm0">37.2</div>
+        <div class="sensor-unit">°C</div>
+        <canvas class="sparkline" id="spark-therm0"></canvas>
+      </div>
+      <div class="card sensor-card">
+        <div class="card-label sensor-tag therm">THERM 1</div>
+        <div class="sensor-value" id="s-therm1">36.8</div>
+        <div class="sensor-unit">°C</div>
+        <canvas class="sparkline" id="spark-therm1"></canvas>
+      </div>
+      <div class="card sensor-card">
+        <div class="card-label sensor-tag acid">ACIDITY 0</div>
+        <div class="sensor-value" id="s-acid0">7.35</div>
+        <div class="sensor-unit">pH</div>
+        <canvas class="sparkline" id="spark-acid0"></canvas>
+      </div>
+      <div class="card sensor-card">
+        <div class="card-label sensor-tag acid">ACIDITY 1</div>
+        <div class="sensor-value" id="s-acid1">7.40</div>
+        <div class="sensor-unit">pH</div>
+        <canvas class="sparkline" id="spark-acid1"></canvas>
+      </div>
+    </div>
+
+    <!-- Row 2: Load cell + Concentration + Heat pads -->
     <div class="row-3">
       <div class="card sensor-card">
-        <div class="card-label">Force (Load Cell)</div>
+        <div class="card-label sensor-tag force">HX711 Load Cell</div>
         <div class="sensor-value" id="s-force">0.00</div>
         <div class="sensor-unit">mN</div>
         <canvas class="sparkline" id="spark-force"></canvas>
       </div>
       <div class="card sensor-card">
-        <div class="card-label">Temperature</div>
-        <div class="sensor-value" id="s-temp">37.2</div>
-        <div class="sensor-unit">°C</div>
-        <canvas class="sparkline" id="spark-temp"></canvas>
+        <div class="card-label sensor-tag conc">CONC</div>
+        <div class="sensor-value" id="s-conc">88.4</div>
+        <div class="sensor-unit">% DO</div>
+        <canvas class="sparkline" id="spark-conc"></canvas>
       </div>
-      <div class="card sensor-card">
-        <div class="card-label">Color Signal (A0)</div>
-        <div class="sensor-value" id="s-color">0.00</div>
-        <div class="sensor-unit">V</div>
-        <canvas class="sparkline" id="spark-color"></canvas>
+      <!-- Heat pads: both in one card since they're actuators -->
+      <div class="card heatpad-card">
+        <div class="card-label sensor-tag heat">HEAT PAD CONTROL</div>
+        <div class="heatpad-row">
+          <div class="heatpad-unit">
+            <div class="heatpad-label">PAD 0</div>
+            <div class="heatpad-state" id="hp0-state">ON</div>
+            <div class="heatpad-bar-bg">
+              <div class="heatpad-bar-fill" id="hp0-fill" style="width:45%"></div>
+            </div>
+            <div class="heatpad-pwm" id="hp0-pwm">45% PWM</div>
+          </div>
+          <div class="heatpad-divider"></div>
+          <div class="heatpad-unit">
+            <div class="heatpad-label">PAD 1</div>
+            <div class="heatpad-state" id="hp1-state">ON</div>
+            <div class="heatpad-bar-bg">
+              <div class="heatpad-bar-fill" id="hp1-fill" style="width:52%"></div>
+            </div>
+            <div class="heatpad-pwm" id="hp1-pwm">52% PWM</div>
+          </div>
+        </div>
+        <canvas class="sparkline" id="spark-hp0" style="margin-top:.4rem"></canvas>
       </div>
     </div>
 
-    <!-- Row 2: LSTM failure predictor + 30s buffer chart -->
+    <!-- Row 3: LSTM failure predictor + 30s buffer chart -->
     <div class="row-2-wide">
       <div class="card lstm-card">
         <div class="card-label">LSTM Failure Probability <span class="badge">Layer 1</span></div>
@@ -105,9 +151,12 @@
         <div class="card-label">30-Second Sensor Buffer</div>
         <canvas id="buffer-chart" height="160"></canvas>
         <div class="chart-legend">
+          <span class="leg-dot" style="background:#5ba8a0"></span>Therm 0
+          <span class="leg-dot" style="background:#7ec8c0"></span>Therm 1
           <span class="leg-dot" style="background:rgb(204,163,72)"></span>Force
-          <span class="leg-dot" style="background:#5ba8a0"></span>Temp
-          <span class="leg-dot" style="background:#a07abd"></span>Color
+          <span class="leg-dot" style="background:#e07ab0"></span>Acid 0
+          <span class="leg-dot" style="background:#a07abd"></span>Acid 1
+          <span class="leg-dot" style="background:#6ab0e0"></span>Conc
         </div>
       </div>
     </div>

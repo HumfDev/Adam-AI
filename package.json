@@ -1,24 +1,24 @@
 {
   "name": "adam",
   "version": "1.0.0",
-  "description": "",
-  "main": "dashboard/main.js",
   "scripts": {
-    "start": "electron ."
+    "dev": "tauri dev",
+    "build": "tauri build"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/HumfDev/Adam-AI.git"
   },
-  "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/HumfDev/Adam-AI/issues"
   },
   "homepage": "https://github.com/HumfDev/Adam-AI#readme",
+  "dependencies": {
+    "@tauri-apps/api": "^2"
+  },
   "devDependencies": {
-    "electron": "^41.2.1"
+    "@tauri-apps/cli": "^2"
   }
 }

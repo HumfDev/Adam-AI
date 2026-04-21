@@ -160,6 +160,7 @@ body { display: flex; }
 
 .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
 .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .9rem; }
+.row-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: .9rem; }
 
 .row-2-wide { display: grid; grid-template-columns: 280px 1fr; gap: .9rem; }
 
@@ -190,6 +191,36 @@ body { display: flex; }
   letter-spacing: .05em;
 }
 
+/* ── Sensor tags ── */
+.sensor-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .18rem .5rem;
+  border-radius: 4px;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .07em;
+  margin-bottom: .55rem;
+  width: fit-content;
+}
+.sensor-tag::before {
+  content: '';
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+}
+.sensor-tag.therm  { background: rgba(91,168,160,.15); color: #5ba8a0; }
+.sensor-tag.therm::before  { background: #5ba8a0; }
+.sensor-tag.acid   { background: rgba(224,122,176,.15); color: #e07ab0; }
+.sensor-tag.acid::before   { background: #e07ab0; }
+.sensor-tag.force  { background: rgba(204,163,72,.15);  color: var(--gold); }
+.sensor-tag.force::before  { background: var(--gold); }
+.sensor-tag.conc   { background: rgba(106,176,224,.15); color: #6ab0e0; }
+.sensor-tag.conc::before   { background: #6ab0e0; }
+.sensor-tag.heat   { background: rgba(224,160,60,.15);  color: var(--amber); }
+.sensor-tag.heat::before   { background: var(--amber); box-shadow: 0 0 4px var(--amber); }
+
 /* ── Sensor cards ── */
 .sensor-card { display: flex; flex-direction: column; }
 .sensor-value {
@@ -200,6 +231,33 @@ body { display: flex; }
 }
 .sensor-unit { font-size: .75rem; color: var(--text-dim); margin-bottom: .4rem; }
 .sparkline { width: 100%; height: 44px; margin-top: auto; }
+
+/* ── Heat pad card ── */
+.heatpad-card { display: flex; flex-direction: column; }
+.heatpad-row { display: flex; gap: .5rem; align-items: stretch; flex: 1; margin-top: .2rem; }
+.heatpad-unit { flex: 1; display: flex; flex-direction: column; gap: .3rem; }
+.heatpad-divider { width: 1px; background: var(--border); }
+.heatpad-label { font-size: .68rem; font-weight: 700; letter-spacing: .08em; color: var(--text-dim); }
+.heatpad-state {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--amber);
+  letter-spacing: .06em;
+}
+.heatpad-state.off { color: var(--text-dim); }
+.heatpad-bar-bg {
+  height: 8px;
+  background: rgba(255,255,255,.06);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.heatpad-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--teal), var(--amber));
+  transition: width .6s ease;
+}
+.heatpad-pwm { font-size: .7rem; color: var(--text-dim); }
 
 /* ── LSTM gauge card ── */
 .lstm-card { display: flex; flex-direction: column; align-items: center; }
