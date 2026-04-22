@@ -79,20 +79,50 @@ function drawSparkline(canvas, data, color) {
   ctx.fill();
 }
 
-// ── Sensor simulation state ────────────────────────────────────
+// ── MCU serial bridge ──────────────────────────────────────────
+const invoke = window.__TAURI__?.core?.invoke;
+
+let mcuConnected = false;
+
+async function mcuConnect() {
+  if (!invoke) return;
+  try {
+    const ports = await invoke('list_ports');
+    // Try each port, connect to the first that responds to PING
+    for (const port of ports) {
+      try {
+        await invoke('connect_port', { port });
+        const pong = await invoke('send_command', { cmd: 'PING' });
+        if (pong === 'PING:OK') {
+          mcuConnected = true;
+          console.log('MCU detected on', port);
+          return;
+        }
+        await invoke('disconnect_port');
+      } catch { await invoke('disconnect_port').catch(() => {}); }
+    }
+    throw new Error('no MCU found on any port');
+  } catch (e) {
+    console.warn('MCU connect failed:', e, '— retrying in 3s');
+    setTimeout(mcuConnect, 3000);
+  }
+}
+
+async function mcuGet(cmd) {
+  if (!invoke || !mcuConnected) return null;
+  try {
+    const r = await invoke('send_command', { cmd });
+    return r.startsWith('ERR:') ? null : r;
+  } catch { return null; }
+}
+
+// ── Sensor state ───────────────────────────────────────────────
 const BUFFER_LEN = 30;
 
-function initBuf(fn) { return Array.from({length: BUFFER_LEN}, (_, i) => fn(i)); }
-
 const sensors = {
-  therm0: initBuf(i => 37.2 + Math.sin(i * 0.25) * 0.4  + (Math.random() - 0.5) * 0.2),
-  therm1: initBuf(i => 36.8 + Math.sin(i * 0.20) * 0.35 + (Math.random() - 0.5) * 0.2),
-  force:  initBuf(i => 80   + Math.sin(i * 0.40) * 12   + Math.random() * 5),
-  acid0:  initBuf(i => 7.35 + Math.sin(i * 0.15) * 0.06 + (Math.random() - 0.5) * 0.02),
-  acid1:  initBuf(i => 7.40 + Math.sin(i * 0.18) * 0.05 + (Math.random() - 0.5) * 0.02),
-  conc:   initBuf(i => 88   + Math.sin(i * 0.30) * 3    + (Math.random() - 0.5) * 1.5),
-  hp0:    initBuf(i => 45   + Math.sin(i * 0.50) * 5    + (Math.random() - 0.5) * 2),
-  hp1:    initBuf(i => 52   + Math.sin(i * 0.45) * 6    + (Math.random() - 0.5) * 2),
+  therm0: [], therm1: [], force: [],
+  acid0:  [], acid1:  [], conc:  [],
+  hp0:    [], hp1:    [],
 };
 
 function pushSensor(arr, val) {
@@ -220,34 +250,58 @@ setInterval(() => {
 }, 1000);
 
 // ── Sensor tick (1Hz) ─────────────────────────────────────────
-function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+function parseMcu(responses) {
+  let t0, t1, f, a0, a1, h0, h1;
+  for (const r of responses) {
+    if (!r) continue;
+    if (r.startsWith('TEMP0:')) { const [,c] = r.slice(6).split(','); t0 = parseFloat(c); }
+    else if (r.startsWith('TEMP1:')) { const [,c] = r.slice(6).split(','); t1 = parseFloat(c); }
+    else if (r.startsWith('LOAD:'))  { const [,g] = r.slice(5).split(','); f  = parseFloat(g); }
+    else if (r.startsWith('PH:') && !r.startsWith('PH:RAW') && !r.startsWith('PH:CAL')) {
+      const parts = r.slice(3).split(',');
+      a0 = parseFloat(parts[3]);   // primary pH reading
+    }
+    else if (r.startsWith('HP0:')) { h0 = parseFloat(r.slice(4)); }
+    else if (r.startsWith('HP1:')) { h1 = parseFloat(r.slice(4)); }
+  }
+  return { t0, t1, f, a0, h0, h1 };
+}
 
-function sensorTick() {
-  const t = Date.now();
+async function sensorTick() {
+  const responses = await Promise.all([
+    mcuGet('GET:TEMP0'),
+    mcuGet('GET:TEMP1'),
+    mcuGet('GET:LOAD'),
+    mcuGet('GET:PH'),
+    mcuGet('GET:HP0'),
+    mcuGet('GET:HP1'),
+  ]);
 
-  const t0 = clamp(last(sensors.therm0) + (Math.random() - 0.49) * 0.12, 35, 40);
-  const t1 = clamp(last(sensors.therm1) + (Math.random() - 0.49) * 0.12, 35, 40);
-  const f  = last(sensors.force) + (Math.random() - 0.48) * 4;
-  const a0 = clamp(last(sensors.acid0) + (Math.random() - 0.5) * 0.012, 6.8, 7.8);
-  const a1 = clamp(last(sensors.acid1) + (Math.random() - 0.5) * 0.012, 6.8, 7.8);
-  const co = clamp(last(sensors.conc)  + (Math.random() - 0.49) * 0.8, 70, 100);
-  const h0 = clamp(last(sensors.hp0)  + (Math.random() - 0.5) * 1.5,  0, 100);
-  const h1 = clamp(last(sensors.hp1)  + (Math.random() - 0.5) * 1.5,  0, 100);
+  const mcu = parseMcu(responses);
 
-  pushSensor(sensors.therm0, t0);
-  pushSensor(sensors.therm1, t1);
-  pushSensor(sensors.force,  f);
-  pushSensor(sensors.acid0,  a0);
-  pushSensor(sensors.acid1,  a1);
-  pushSensor(sensors.conc,   co);
-  pushSensor(sensors.hp0,    h0);
-  pushSensor(sensors.hp1,    h1);
+  const t0 = mcu.t0 ?? last(sensors.therm0);
+  const t1 = mcu.t1 ?? last(sensors.therm1);
+  const f  = mcu.f  ?? last(sensors.force);
+  const a0 = mcu.a0 ?? last(sensors.acid0);
+  const a1 = mcu.a0 ?? last(sensors.acid1);
+  const co = last(sensors.conc);
+  const h0 = mcu.h0 ?? last(sensors.hp0);
+  const h1 = mcu.h1 ?? last(sensors.hp1);
 
-  // text values
-  document.getElementById('s-therm0').textContent = t0.toFixed(2);
-  document.getElementById('s-therm1').textContent = t1.toFixed(2);
-  document.getElementById('s-force').textContent  = f.toFixed(2);
-  document.getElementById('s-acid0').textContent  = a0.toFixed(3);
+  if (t0 != null) pushSensor(sensors.therm0, t0);
+  if (t1 != null) pushSensor(sensors.therm1, t1);
+  if (f  != null) pushSensor(sensors.force,  f);
+  if (a0 != null) pushSensor(sensors.acid0,  a0);
+  if (a1 != null) pushSensor(sensors.acid1,  a1);
+  if (co != null) pushSensor(sensors.conc,   co);
+  if (h0 != null) pushSensor(sensors.hp0,    h0);
+  if (h1 != null) pushSensor(sensors.hp1,    h1);
+
+  // text values — only update if we have a real reading
+  if (t0 != null) document.getElementById('s-therm0').textContent = t0.toFixed(2);
+  if (t1 != null) document.getElementById('s-therm1').textContent = t1.toFixed(2);
+  if (f  != null) document.getElementById('s-force').textContent  = f.toFixed(2);
+  if (a0 != null) document.getElementById('s-acid0').textContent  = a0.toFixed(3);
   document.getElementById('s-acid1').textContent  = a1.toFixed(3);
   document.getElementById('s-conc').textContent   = co.toFixed(1);
 
@@ -276,8 +330,8 @@ function sensorTick() {
 
   drawBufferChart();
 }
-setInterval(sensorTick, 1000);
-sensorTick();
+setInterval(() => sensorTick(), 1000);
+mcuConnect().then(() => sensorTick());
 drawGauge(lstmValue);
 
 // ── Classifier bars ───────────────────────────────────────────
