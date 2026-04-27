@@ -310,8 +310,8 @@ async function sensorTick() {
   const hp1pct = Math.round(h1);
   document.getElementById('hp0-fill').style.width  = hp0pct + '%';
   document.getElementById('hp1-fill').style.width  = hp1pct + '%';
-  document.getElementById('hp0-pwm').textContent   = hp0pct + '% PWM';
-  document.getElementById('hp1-pwm').textContent   = hp1pct + '% PWM';
+  document.getElementById('hp0-pwm').textContent   = hp0pct + '%';
+  document.getElementById('hp1-pwm').textContent   = hp1pct + '%';
   const hp0El = document.getElementById('hp0-state');
   const hp1El = document.getElementById('hp1-state');
   hp0El.textContent = hp0pct > 5 ? 'ON' : 'OFF';
