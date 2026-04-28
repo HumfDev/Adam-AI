@@ -1,6 +1,8 @@
 name: 'test-on-pr'
 
-on: [pull_request]
+on: 
+  pull_request:
+  workflow_dispatch: # Allows manual trigger from the UI
 
 # This workflow will build your Tauri app specifically for a 64-bit Raspberry Pi OS (Debian)
 
