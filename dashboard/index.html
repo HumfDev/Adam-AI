@@ -66,26 +66,26 @@
     <!-- Row 1: Thermistors + Acidity sensors -->
     <div class="row-4">
       <div class="card sensor-card">
-        <div class="card-label sensor-tag therm">THERM 0</div>
-        <div class="sensor-value" id="s-therm0">37.2</div>
+        <div class="card-label sensor-tag therm">TEMPERATURE 0</div>
+        <div class="sensor-value" id="s-therm0">--</div>
         <div class="sensor-unit">°C</div>
         <canvas class="sparkline" id="spark-therm0"></canvas>
       </div>
       <div class="card sensor-card">
-        <div class="card-label sensor-tag therm">THERM 1</div>
-        <div class="sensor-value" id="s-therm1">36.8</div>
+        <div class="card-label sensor-tag therm">TEMPERATURE 1</div>
+        <div class="sensor-value" id="s-therm1">--</div>
         <div class="sensor-unit">°C</div>
         <canvas class="sparkline" id="spark-therm1"></canvas>
       </div>
       <div class="card sensor-card">
-        <div class="card-label sensor-tag acid">ACIDITY 0</div>
-        <div class="sensor-value" id="s-acid0">7.35</div>
+        <div class="card-label sensor-tag acid">pH 0</div>
+        <div class="sensor-value" id="s-acid0">--</div>
         <div class="sensor-unit">pH</div>
         <canvas class="sparkline" id="spark-acid0"></canvas>
       </div>
       <div class="card sensor-card">
-        <div class="card-label sensor-tag acid">ACIDITY 1</div>
-        <div class="sensor-value" id="s-acid1">7.40</div>
+        <div class="card-label sensor-tag acid">pH 1</div>
+        <div class="sensor-value" id="s-acid1">--</div>
         <div class="sensor-unit">pH</div>
         <canvas class="sparkline" id="spark-acid1"></canvas>
       </div>
@@ -95,13 +95,13 @@
     <div class="row-3">
       <div class="card sensor-card">
         <div class="card-label sensor-tag force">HX711 Load Cell</div>
-        <div class="sensor-value" id="s-force">0.00</div>
+        <div class="sensor-value" id="s-force">--</div>
         <div class="sensor-unit">mN</div>
         <canvas class="sparkline" id="spark-force"></canvas>
       </div>
       <div class="card sensor-card">
-        <div class="card-label sensor-tag conc">CONC</div>
-        <div class="sensor-value" id="s-conc">88.4</div>
+        <div class="card-label sensor-tag conc">CONCENTRATION</div>
+        <div class="sensor-value" id="s-conc">--</div>
         <div class="sensor-unit">% DO</div>
         <canvas class="sparkline" id="spark-conc"></canvas>
       </div>
@@ -111,20 +111,20 @@
         <div class="heatpad-row">
           <div class="heatpad-unit">
             <div class="heatpad-label">PAD 0</div>
+            <div class="heatpad-pwm" id="hp0-pwm">45%</div>
             <div class="heatpad-state" id="hp0-state">ON</div>
             <div class="heatpad-bar-bg">
               <div class="heatpad-bar-fill" id="hp0-fill" style="width:45%"></div>
             </div>
-            <div class="heatpad-pwm" id="hp0-pwm">45% PWM</div>
           </div>
           <div class="heatpad-divider"></div>
           <div class="heatpad-unit">
             <div class="heatpad-label">PAD 1</div>
+            <div class="heatpad-pwm" id="hp1-pwm">52%</div>
             <div class="heatpad-state" id="hp1-state">ON</div>
             <div class="heatpad-bar-bg">
               <div class="heatpad-bar-fill" id="hp1-fill" style="width:52%"></div>
             </div>
-            <div class="heatpad-pwm" id="hp1-pwm">52% PWM</div>
           </div>
         </div>
         <canvas class="sparkline" id="spark-hp0" style="margin-top:.4rem"></canvas>
@@ -151,12 +151,12 @@
         <div class="card-label">30-Second Sensor Buffer</div>
         <canvas id="buffer-chart" height="160"></canvas>
         <div class="chart-legend">
-          <span class="leg-dot" style="background:#5ba8a0"></span>Therm 0
-          <span class="leg-dot" style="background:#7ec8c0"></span>Therm 1
+          <span class="leg-dot" style="background:#5ba8a0"></span>Temperature 0
+          <span class="leg-dot" style="background:#7ec8c0"></span>Temperature 1
           <span class="leg-dot" style="background:rgb(204,163,72)"></span>Force
-          <span class="leg-dot" style="background:#e07ab0"></span>Acid 0
-          <span class="leg-dot" style="background:#a07abd"></span>Acid 1
-          <span class="leg-dot" style="background:#6ab0e0"></span>Conc
+          <span class="leg-dot" style="background:#e07ab0"></span>pH 0
+          <span class="leg-dot" style="background:#a07abd"></span>pH 1
+          <span class="leg-dot" style="background:#6ab0e0"></span>Concentration
         </div>
       </div>
     </div>
