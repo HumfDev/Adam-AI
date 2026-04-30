@@ -1,24 +1,29 @@
 #!/usr/bin/env bash
-# Upload every .py file under ./MCU to the connected MicroPython board using ampy.
+# Upload every .py file under ./mcu/<rev>/ to the connected MicroPython board using ampy.
 #
 # Usage:
-#   ./upload_mcu.sh                     # auto-detect port, reset after upload
-#   ./upload_mcu.sh -p /dev/cu.usbXXXX  # explicit port
-#   ./upload_mcu.sh --no-reset          # skip the soft reset at the end
-#   AMPY_PORT=/dev/cu.usbXXXX ./upload_mcu.sh
+#   ./upload_mcu.sh revA                 # auto-detect port, reset after upload
+#   ./upload_mcu.sh revB -p /dev/cu.usbXXXX  # explicit port
+#   ./upload_mcu.sh revA --no-reset      # skip the soft reset at the end
+#   AMPY_PORT=/dev/cu.usbXXXX ./upload_mcu.sh revB
 #
 # Requires: ampy (pip install adafruit-ampy).
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-SRC_DIR="$SCRIPT_DIR/MCU"
+MCU_ROOT="$SCRIPT_DIR/mcu"
 
 PORT="${AMPY_PORT:-}"
 RESET=1
+REV=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        revA|revB)
+            REV="$1"
+            shift
+            ;;
         -p|--port)
             PORT="$2"
             shift 2
@@ -28,7 +33,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         -h|--help)
-            sed -n '2,9p' "$0"
+            sed -n '2,10p' "$0"
             exit 0
             ;;
         *)
@@ -37,6 +42,13 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+if [[ -z "$REV" ]]; then
+    echo "Usage: $(basename "$0") revA|revB [-p PORT] [--no-reset]" >&2
+    exit 2
+fi
+
+SRC_DIR="$MCU_ROOT/$REV"
 
 if ! command -v ampy >/dev/null 2>&1; then
     echo "Error: ampy not found on PATH. Install with: pip install adafruit-ampy" >&2
@@ -77,7 +89,7 @@ if [[ ${#FILES[@]} -eq 0 ]]; then
     exit 1
 fi
 
-echo "Uploading to $PORT from $SRC_DIR"
+echo "Uploading to $PORT from $SRC_DIR ($REV)"
 
 # Put main.py last so earlier imports exist by the time it runs on reset.
 ORDERED=()
